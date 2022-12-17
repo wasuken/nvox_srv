@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model RSS{
+  id Int @id @default(autoincrement()) @map("rss_id")
+  rssItems RSSItem[] @relation("RSS_RSSItem_rss")
+  url String
+  name String?
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime  @updatedAt @map(name: "updated_at")
+
+  @@map("rss")
+}
+
+model RSSItem {
+  id Int @id @default(autoincrement()) @map("rss_item_id")
+  rss_id Int
+  RSS_RSSItem_rss RSS @relation("RSS_RSSItem_rss", fields: [rss_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  voice_filepath String?
+  voice_downloaded Boolean @default(false)
+  title String
+  link String
+  desc String
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime  @updatedAt @map(name: "updated_at")
+  @@map("rss_item")
+}
+

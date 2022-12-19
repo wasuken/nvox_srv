@@ -3,6 +3,8 @@ import Image from "next/image";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 
+import WavList from '../components/WavList'
+
 const Top = styled.div``;
 
 const Middle = styled.div``;
@@ -67,19 +69,13 @@ export default function Index() {
         <select onChange={RSSSelectChange}>
           <option value="">No Selected</option>
           {rssList.map((rss, i) => (
-            <option key={i} value={rss.id}>{rss.url}</option>
+            <option key={i} value={rss.id}>{rss.name}({rss.url})</option>
           ))}
         </select>
       </Top>
       <Middle>
         <h2>wav file list </h2>
-        <ul>
-        {wavList.map((wav, i) => (
-          <li key={i}>
-            {wav.link}
-          </li>
-        ))}
-        </ul>
+        <WavList list={wavList} />
       </Middle>
     </div>
   );

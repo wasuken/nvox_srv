@@ -42,7 +42,7 @@ export default function WavList(props) {
   return (
     <WavArea>
       {props.list.map((item, i) => (
-        <WavItem>
+        <WavItem key={i}>
           <WavHeader>
             <h3>{item.title}</h3>
           </WavHeader>

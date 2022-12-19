@@ -1,55 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { fetchRSS, updateRSSItemVoices } from "../../lib/rss";
-import fetch from "node-fetch";
-import fs from "fs";
 
 import { PrismaClient, Prisma } from "@prisma/client";
+
 const prisma = new PrismaClient();
 
 const crypto = require("crypto");
-
-function genUUID() {
-  return "xxxxxxxx_xxxx_4xxx_yxxx_xxxxxxxxxxxx".replace(/[xy]/g, function (a) {
-    let r = (new Date().getTime() + Math.random() * 16) % 16 | 0,
-      v = a == "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
-async function createVoice(text) {
-  const res = await fetch(
-    `http://localhost:50021/audio_query?text=${text}&speaker=0`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  const query = await res.json();
-
-  const sound_row = await fetch(
-    `http://localhost:50021/synthesis?speaker=0&enable_interrogative_upspeak=true`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        accept: "audio/wav",
-        responseType: "stream",
-      },
-      body: JSON.stringify(query),
-    }
-  );
-
-  const voice_id = genUUID();
-  const path = `data/wav/${voice_id}.wav`;
-  const dest = fs.createWriteStream(path);
-  sound_row.body.pipe(dest);
-  return path;
-}
-
-
 
 async function saveRSSItems(url) {
   // ここで本文抽出〜テキスト生成

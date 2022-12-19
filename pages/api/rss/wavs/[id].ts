@@ -10,7 +10,11 @@ export default async function handler(
   if (req.method === "GET") {
     const rss = await prisma.rSS.findMany({
       include: {
-        rssItems: true
+        rssItems: {
+          orderBy: {
+            createdAt: "desc"
+          }
+        }
       }
     });
     // 一覧

@@ -24,6 +24,7 @@ export default function Index() {
       .then((json) => {
         console.log(json);
         setRSSUrl("");
+        setWavList([]);
         fetchRSSList();
       });
   }
@@ -35,11 +36,15 @@ export default function Index() {
   function fetchWavList(id) {
     fetch(`/api/rss/wavs/${id}`)
       .then((res) => res.json())
-      .then((json) => setWavList(json));
+      .then((json) => {
+        console.log(json[0])
+        setWavList(json[0].rssItems)
+      });
   }
   function RSSSelectChange(e){
     // wav listを更新する
     const id = e.target.value;
+    setWavList([]);
     if(id === "") return;
     fetchWavList(id);
   }
@@ -69,7 +74,11 @@ export default function Index() {
       <Middle>
         <h2>wav file list </h2>
         <ul>
-          <li></li>
+        {wavList.map((wav, i) => (
+          <li key={i}>
+            {wav.link}
+          </li>
+        ))}
         </ul>
       </Middle>
     </div>

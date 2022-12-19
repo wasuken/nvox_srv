@@ -3,6 +3,31 @@ const prisma = new PrismaClient();
 import fs from "fs";
 import fetch from "node-fetch";
 
+export async function saveRSSItemsFromId(id) {
+  const record = await prisma.rSS.findFirst({
+    where: {
+      id: id,
+    },
+  });
+  // ここで本文抽出〜テキスト生成
+  const { items, title } = await fetchRSS(record.url);
+
+  const rss_item_records = items.map((rss_item) => {
+    const contents = rss_item["content:encodedSnippet"];
+    const text = rss_item.title + "\n" + contents;
+    return {
+      rss_id: id,
+      link: rss_item.link,
+      title: rss_item.title,
+      desc: text,
+    };
+  });
+  await prisma.rSSItem.createMany({
+    data: rss_item_records,
+    skipDuplicates: true,
+  });
+}
+
 export async function saveRSSItems(url) {
   // ここで本文抽出〜テキスト生成
   const { items, title } = await fetchRSS(url);
@@ -26,6 +51,7 @@ export async function saveRSSItems(url) {
   });
   await prisma.rSSItem.createMany({
     data: rss_item_records,
+    skipDuplicates: true,
   });
 }
 

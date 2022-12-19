@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { updateRSSItemVoices } from '../../../lib/rss'
+import { updateRSSItemVoices } from '../../../../lib/rss'
 
 export default async function handler(
   req: NextApiRequest,

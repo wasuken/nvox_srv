@@ -3,7 +3,7 @@ import Image from "next/image";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 
-import WavList from '../components/WavList'
+import WavList from "../components/WavList";
 
 const Top = styled.div``;
 
@@ -15,7 +15,7 @@ export default function Index() {
   const [rssUrl, setRSSUrl] = useState("");
   const [selectedRSS, setSelectedRSS] = useState("");
   function PostRSSClick() {
-    fetch(`/api/rss`, {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rss`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -31,24 +31,42 @@ export default function Index() {
       });
   }
   function fetchRSSList() {
-    fetch(`/api/rss`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rss`)
       .then((res) => res.json())
       .then((json) => setRSSList(json));
   }
   function fetchWavList(id) {
-    fetch(`/api/rss/wavs/${id}`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rss/wavs/${id}`)
       .then((res) => res.json())
       .then((json) => {
-        console.log(json[0])
-        setWavList(json[0].rssItems)
+        console.log(json[0]);
+        setWavList(json[0].rssItems);
       });
   }
-  function RSSSelectChange(e){
-    // wav listを更新する
-    const id = e.target.value;
+  function RSSSelectChange(e) {
+    const url = e.target.value;
     setWavList([]);
-    if(id === "") return;
-    fetchWavList(id);
+    setSelectedRSS(url);
+  }
+  function RSSSelectClick() {
+    if (selectedRSS === "") return;
+    fetchWavList(selectedRSS);
+  }
+  function ReacquireRSSClick() {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rss/${selectedRSS}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url: selectedRSS }),
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        console.log(json);
+        setRSSUrl("");
+        setWavList([]);
+        fetchRSSList();
+      });
   }
   useEffect(() => {
     fetchRSSList();
@@ -69,9 +87,13 @@ export default function Index() {
         <select onChange={RSSSelectChange}>
           <option value="">No Selected</option>
           {rssList.map((rss, i) => (
-            <option key={i} value={rss.id}>{rss.name}({rss.url})</option>
+            <option key={i} value={rss.id}>
+              {rss.name}({rss.url})
+            </option>
           ))}
         </select>
+        <button onClick={RSSSelectClick}>Select RSS URL</button>
+        <button onClick={ReacquireRSSClick}>再取得</button>
       </Top>
       <Middle>
         <h2>wav file list </h2>

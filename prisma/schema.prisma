@@ -28,7 +28,7 @@ model RSSItem {
   voice_filepath String?
   voice_downloaded Boolean @default(false)
   title String
-  link String
+  link String @unique
   desc String
   createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime  @updatedAt @map(name: "updated_at")

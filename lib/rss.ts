@@ -3,6 +3,57 @@ const prisma = new PrismaClient();
 import fs from "fs";
 import fetch from "node-fetch";
 
+export async function saveRSSItems(url) {
+  // ここで本文抽出〜テキスト生成
+  const { items, title } = await fetchRSS(url);
+
+  const rss_record = await prisma.rSS.create({
+    data: {
+      url: url,
+      name: title,
+    },
+  });
+
+  const rss_item_records = items.map((rss_item) => {
+    const contents = rss_item["content:encodedSnippet"];
+    const text = rss_item.title + "\n" + contents;
+    return {
+      rss_id: rss_record.id,
+      link: rss_item.link,
+      title: rss_item.title,
+      desc: text,
+    };
+  });
+  await prisma.rSSItem.createMany({
+    data: rss_item_records,
+  });
+}
+
+// DBレコードから参照されてないWavファイルを削除する
+export async function cleanWavFiles() {
+  const records = await prisma.rSSItem.findMany({
+    select: {
+      voice_filepath: true,
+    },
+  });
+  const idList = records.map((r) =>
+    r.voice_filepath.split("/").pop().split(".").shift()
+  );
+  fs.readdir(`data/wav/`, (err, files) => {
+    if (err) {
+      console.log("error", err);
+      return;
+    }
+    files.forEach((file) => {
+      const wavId = file.split("/").pop().split(".").shift();
+      if (!idList.includes(wavId)) {
+        console.log("remove", file);
+        // fs.unlinkSync(file);
+      }
+    });
+  });
+}
+
 export async function fetchRSS(rss_url) {
   const Parser = require("rss-parser");
   const parser = new Parser();

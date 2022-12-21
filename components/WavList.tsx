@@ -44,18 +44,20 @@ export default function WavList(props) {
       {props.list.map((item, i) => (
         <WavItem key={i}>
           <WavHeader>
-            <h3>{item.title}</h3>
+            <WavLink target="_blank" href={item.link}>
+              <h3>{item.title}</h3>
+            </WavLink>
           </WavHeader>
           <WavFooter>
-          {item.voice_downloaded ? (
-            <figure>
-              <audio controls src={`/${item.voice_filepath}`}>
-                <a href={`/${item.voice_filepath}`}>Download audio</a>
-              </audio>
-            </figure>
-          ): (
-          ""
-          )}
+            {item.voice_downloaded ? (
+              <figure>
+                <audio controls src={`/${item.voice_filepath}`}>
+                  <a href={`/${item.voice_filepath}`}>Download audio</a>
+                </audio>
+              </figure>
+            ) : (
+              ""
+            )}
             <WavLink target="_blank" href={item.link}>
               {item.desc}
             </WavLink>

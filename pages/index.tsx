@@ -88,11 +88,11 @@ export default function Index() {
           <option value="">No Selected</option>
           {rssList.map((rss, i) => (
             <option key={i} value={rss.id}>
-              {rss.name}({rss.url})
+              {rss.name}
             </option>
           ))}
         </select>
-        <button onClick={RSSSelectClick}>Select RSS URL</button>
+        <button onClick={RSSSelectClick}>選択したRSSから記事一覧を表示</button>
         <button onClick={ReacquireRSSClick}>再取得</button>
       </Top>
       <Middle>

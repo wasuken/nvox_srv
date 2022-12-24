@@ -1,18 +1,31 @@
 import { PrismaClient, Prisma } from "@prisma/client";
+import { createVoice } from './voicevox'
 const prisma = new PrismaClient();
-const cheerio = require('cheerio');
+const cheerio = require("cheerio");
 import fs from "fs";
 import fetch from "node-fetch";
 
-async function parseUrlPageHtmlToText(url: string){
-  const res = await fetch(url, {redirect: 'manual'});
+async function parseUrlPageHtmlToTextAndImgUrl(url: string) {
+  const res = await fetch(url, { redirect: "manual" });
   const html = await res.text();
   const $ = cheerio.load(html);
-  return $('body')
+  const text = $("body")
     .html()
-    .replace(/<script[^>]*>[^<]+/gi, '')
-    .replace(/<style[^>]*>[^<]+/gi, '')
-    .replace(/(<([^>]+)>)/gi, '');
+    .replace(/<script[^>]*>[^<]+/gi, "")
+    .replace(/<style[^>]*>[^<]+/gi, "")
+    .replace(/(<([^>]+)>)/gi, "");
+  const imgpath = $("body img").attr("src");
+  let imgurl = imgpath;
+  if (!imgpath.startsWith("http") && !imgpath.startsWith("data:image")) {
+    const baseurl = url.split("/").slice(0, 3).join("/");
+    let imgpathh = imgpath;
+    if (imgpathh.startsWith("./")) {
+      // 'hoge/'スタイルへと調整する処理
+      imgpathh = imgpathh.substr(2);
+    }
+    imgurl = `${baseurl}/${imgpathh}`;
+  }
+  return { text, imgurl };
 }
 
 export async function saveRSSItemsFromId(id) {
@@ -24,17 +37,21 @@ export async function saveRSSItemsFromId(id) {
   // ここで本文抽出〜テキスト生成
   const { items, title } = await fetchRSS(record.url);
 
-  const rss_item_records = await Promise.all(items.map(async (rss_item) => {
-    const contents = rss_item["content:encodedSnippet"];
-    // const text = rss_item.title + "\n" + contents;
-    const text = await parseUrlPageHtmlToText(rss_item.link);
-    return {
-      rss_id: id,
-      link: rss_item.link,
-      title: rss_item.title,
-      desc: text,
-    };
-  }));
+  const rss_item_records = await Promise.all(
+    items.map(async (rss_item) => {
+      const contents = rss_item["content:encodedSnippet"];
+      const { text, imgurl } = await parseUrlPageHtmlToTextAndImgUrl(
+        rss_item.link
+      );
+      return {
+        rss_id: id,
+        link: rss_item.link,
+        title: rss_item.title,
+        imageurl: imgurl,
+        desc: text,
+      };
+    })
+  );
   await prisma.rSSItem.createMany({
     data: rss_item_records,
     skipDuplicates: true,
@@ -101,46 +118,7 @@ export async function fetchRSS(rss_url) {
   return { items: feed.items, title: feed.title };
 }
 
-function genUUID() {
-  return "xxxxxxxx_xxxx_4xxx_yxxx_xxxxxxxxxxxx".replace(/[xy]/g, function (a) {
-    let r = (new Date().getTime() + Math.random() * 16) % 16 | 0,
-      v = a == "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
 
-async function createVoice(text) {
-  const res = await fetch(
-    `http://voicevox_engine:50021/audio_query?text=${text}&speaker=0`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  const query = await res.json();
-
-  const sound_row = await fetch(
-    `http://voicevox_engine:50021/synthesis?speaker=0&enable_interrogative_upspeak=true`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        accept: "audio/wav",
-        responseType: "stream",
-      },
-      body: JSON.stringify(query),
-    }
-  );
-
-  const voice_id = genUUID();
-  const path = `data/wav/${voice_id}.wav`;
-  const dest = fs.createWriteStream(path);
-  sound_row.body.pipe(dest);
-  return path;
-}
 
 // バッチ処理とかで少しずつ消化していく
 export async function updateRSSItemVoices(n: int) {

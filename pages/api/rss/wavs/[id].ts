@@ -7,6 +7,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { id } = req.query
+  const qid = parseInt(id);
   if (req.method === "GET") {
     const rss = await prisma.rSS.findMany({
       include: {
@@ -15,6 +16,9 @@ export default async function handler(
             createdAt: "desc"
           }
         }
+      },
+      where: {
+        id: qid,
       }
     });
     // 一覧

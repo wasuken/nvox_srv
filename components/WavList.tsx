@@ -10,12 +10,12 @@ const WavItem = styled.div`
   border: 1px solid gray;
   border-radius: 15px;
   padding: 10px;
-  height: 40vh;
+  height: 400px;
   margin: 5px;
-  width: 30vw;
+  width: 300px;
   @media screen and (max-width: 700px) {
     width: 80vw;
-    height: 30vh;
+    height: 350px;
   }
 `;
 const WavHeader = styled.div`
@@ -24,13 +24,26 @@ const WavHeader = styled.div`
   overflow: hidden;
   height: 40px;
 `;
+const WavMain = styled.div`
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+`;
+const WavImg = styled.img`
+  background-size: cover;
+  border-radius: 4px;
+  display: block;
+  height: 20vh;
+  width: 250px;
+`;
 const WavFooter = styled.div`
   margin-top: 20px;
   height: auto;
   color: gray;
   text-overflow: ellipsis;
   overflow: hidden;
-  height: 140px;
+  height: 100px;
+  font-size: 10px;
   @media screen and (max-width: 700px) {
     margin-top: 10px;
     height: 100px;
@@ -48,6 +61,9 @@ export default function WavList(props) {
               <h3>{item.title}</h3>
             </WavLink>
           </WavHeader>
+          <WavMain>
+            <WavImg src={item.imageurl}></WavImg>
+          </WavMain>
           <WavFooter>
             {item.voice_downloaded ? (
               <figure>

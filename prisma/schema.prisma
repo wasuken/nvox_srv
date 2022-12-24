@@ -29,6 +29,7 @@ model RSSItem {
   voice_downloaded Boolean @default(false)
   title String
   link String @unique
+  imageurl String @default("")
   desc String
   createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime  @updatedAt @map(name: "updated_at")

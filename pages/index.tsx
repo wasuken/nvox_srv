@@ -92,7 +92,7 @@ export default function Index() {
             </option>
           ))}
         </select>
-        <button onClick={RSSSelectClick}>選択したRSSから記事一覧を表示</button>
+        <button onClick={RSSSelectClick}>記事一覧を表示</button>
         <button onClick={ReacquireRSSClick}>再取得</button>
       </Top>
       <Middle>

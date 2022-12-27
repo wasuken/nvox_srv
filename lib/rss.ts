@@ -14,7 +14,7 @@ async function parseUrlPageHtmlToTextAndImgUrl(url: string) {
     .replace(/<script[^>]*>[^<]+/gi, "")
     .replace(/<style[^>]*>[^<]+/gi, "")
     .replace(/(<([^>]+)>)/gi, "");
-  const imgpath = $("body img").attr("src");
+  const imgpath = $("body img").attr("src") ?? '';
   let imgurl = imgpath;
   if (!imgpath.startsWith("http") && !imgpath.startsWith("data:image")) {
     const baseurl = url.split("/").slice(0, 3).join("/");

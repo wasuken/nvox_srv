@@ -23,6 +23,9 @@ const WavHeader = styled.div`
   text-overflow: ellipsis;
   overflow: hidden;
   height: 40px;
+  @media screen and (max-width: 700px) {
+    height: auto;
+  }
 `;
 const WavMain = styled.div`
   margin-top: 10px;
@@ -46,7 +49,7 @@ const WavFooter = styled.div`
   font-size: 10px;
   @media screen and (max-width: 700px) {
     margin-top: 10px;
-    height: 100px;
+    height: 90px;
   }
 `;
 const WavLink = styled.a``;

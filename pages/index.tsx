@@ -2,6 +2,8 @@ import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
+import Button from "react-bootstrap/Button";
+import Form from 'react-bootstrap/Form';
 
 import WavList from "../components/WavList";
 
@@ -44,9 +46,9 @@ export default function Index() {
       });
   }
   function RSSSelectChange(e) {
-    const url = e.target.value;
-    setWavList([]);
-    setSelectedRSS(url);
+    const id = e.target.value;
+    fetchWavList(id);
+    setSelectedRSS(id);
   }
   function RSSSelectClick() {
     if (selectedRSS === "") return;
@@ -76,24 +78,31 @@ export default function Index() {
       <Top>
         <h2>RSS</h2>
         <div>
-          <input
+          <Form.Control
             type="url"
             placeholder="rss url"
             value={rssUrl}
             onChange={(e) => setRSSUrl(e.target.value)}
-          />
-          <button onClick={PostRSSClick}>Post</button>
+          >
+          </Form.Control>
+          <Button variant="primary" onClick={PostRSSClick}>
+            Post
+          </Button>
         </div>
-        <select onChange={RSSSelectChange}>
-          <option value="">No Selected</option>
+        <Form.Select onChange={RSSSelectChange} value={selectedRSS}>
+          <option>No Selected</option>
           {rssList.map((rss, i) => (
             <option key={i} value={rss.id}>
               {rss.name}
             </option>
           ))}
-        </select>
-        <button onClick={RSSSelectClick}>記事一覧を表示</button>
-        <button onClick={ReacquireRSSClick}>再取得</button>
+        </Form.Select>
+        <Button variant="primary" onClick={RSSSelectClick}>
+          記事一覧を表示
+        </Button>
+        <Button variant="primary" onClick={ReacquireRSSClick}>
+          再取得
+        </Button>
       </Top>
       <Middle>
         <h2>wav file list </h2>

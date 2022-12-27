@@ -2,9 +2,17 @@ import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+
+const ChatSpace = styled.div`
+  height: 50px;
+`;
 
 const ChatLogList = styled.div`
-  width: 60vw;
+  width: 80vw;
+  height: 400px;
+  overflow: scroll;
 `;
 const UserChat = styled.div`
   display: flex;
@@ -17,23 +25,45 @@ const SystemChat = styled.div`
   margin: 5px;
 `;
 const ChatContent = styled.div`
-  width: 400px;
+  width: 300px;
   padding: 20px;
   border: 1px solid blue;
   border-radius: 10px;
 `;
 const ChatLogListHeader = styled.div`
   display: flex;
-  justify-content: space-between;
+  position: fixed;
+  z-index: 2;
+  justify-content: space-evenly;
+  padding: 5px;
+  width: 80vw;
+  background: #66666644;
 `;
-const ChatLogListHeaderCol = styled.div``;
+const ChatLogListHeaderCol = styled.div`
+  margin: 3px;
+`;
 
 export default function Index() {
   const [text, setText] = useState("");
   const [chatLog, setChatLog] = useState([]);
   const [loading, setLoading] = useState(false);
   function PostChat() {
+    if (loading) return;
     setLoading(true);
+    setChatLog([
+      ...chatLog,
+      {
+        text,
+        user: 0, // user
+      },
+    ]);
+    const updatedChatLog = [
+      ...chatLog,
+      {
+        text,
+        user: 0, // user
+      },
+    ]
     fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/openai/chat`, {
       method: "POST",
       headers: {
@@ -44,11 +74,7 @@ export default function Index() {
       .then((res) => res.json())
       .then((json) => {
         setChatLog([
-          ...chatLog,
-          {
-            text,
-            user: 0, // user
-          },
+          ...updatedChatLog,
           {
             text: json.text,
             user: 1, // system
@@ -59,7 +85,6 @@ export default function Index() {
         setLoading(false);
       });
   }
-  if (loading) return <p>Loading...</p>;
   return (
     <div>
       <ChatLogList>
@@ -67,15 +92,14 @@ export default function Index() {
           <ChatLogListHeaderCol>User</ChatLogListHeaderCol>
           <ChatLogListHeaderCol>System</ChatLogListHeaderCol>
         </ChatLogListHeader>
-        {chatLog.map((chat) =>
+        <ChatSpace />
+        {chatLog.map((chat, key) =>
           chat.user === 0 ? (
-            <UserChat>
-              <ChatContent>
-                {chat.text}
-              </ChatContent>
+            <UserChat key={key}>
+              <ChatContent>{chat.text}</ChatContent>
             </UserChat>
           ) : (
-            <SystemChat>
+            <SystemChat key={key}>
               <ChatContent>
                 {chat.text}
                 <figure>
@@ -87,16 +111,19 @@ export default function Index() {
             </SystemChat>
           )
         )}
+        {loading ? "Loading..." : ""}
       </ChatLogList>
       <div>
-        <textarea
-          cols="30"
-          rows="10"
+        <Form.Control
           onChange={(e) => setText(e.target.value)}
           value={text}
-        ></textarea>
+          as="textarea"
+          placeholder="Leave a comment here"
+        />
       </div>
-      <button onClick={() => PostChat()}>post</button>
+      <Button variant="primary" onClick={() => PostChat()}>
+        post
+      </Button>
     </div>
   );
 }

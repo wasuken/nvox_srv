@@ -48,6 +48,7 @@ export async function saveRSSItemsFromId(id) {
         link: rss_item.link,
         title: rss_item.title,
         imageurl: imgurl,
+        shortdesc: contents,
         desc: text,
       };
     })
@@ -135,7 +136,7 @@ export async function updateRSSItemVoices(n: int) {
   // どちゃくそ遅そう
   await Promise.all(
     not_dl_recs.map(async (rec) => {
-      const text = rec.desc;
+      const text = rec.shortdesc;
       const path = await createVoice(text);
       await prisma.rSSItem.update({
         where: {

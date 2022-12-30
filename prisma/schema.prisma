@@ -30,7 +30,8 @@ model RSSItem {
   title String
   link String @unique
   imageurl String @default("")
-  desc String
+  desc String? @default("")
+  shortdesc String? @default("")
   createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime  @updatedAt @map(name: "updated_at")
   @@map("rss_item")

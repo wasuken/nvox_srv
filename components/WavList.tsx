@@ -23,6 +23,7 @@ const WavHeader = styled.div`
   text-overflow: ellipsis;
   overflow: hidden;
   height: 40px;
+  white-space: nowrap;
   @media screen and (max-width: 700px) {
     height: auto;
   }
@@ -43,14 +44,17 @@ const WavFooter = styled.div`
   margin-top: 20px;
   height: auto;
   color: gray;
+  font-size: 10px;
   text-overflow: ellipsis;
   overflow: hidden;
-  height: 100px;
-  font-size: 10px;
   @media screen and (max-width: 700px) {
     margin-top: 10px;
     height: 90px;
   }
+`;
+const WavDesc = styled.div`
+  text-overflow: ellipsis;
+  overflow: hidden;
 `;
 const WavLink = styled.a``;
 
@@ -58,30 +62,30 @@ export default function WavList(props) {
   return (
     <WavArea>
       {props.list.map((item, i) => (
-        <WavItem key={i}>
-          <WavHeader>
-            <WavLink target="_blank" href={item.link}>
-              <h3>{item.title}</h3>
-            </WavLink>
-          </WavHeader>
-          <WavMain>
-            <WavImg src={item.imageurl}></WavImg>
-          </WavMain>
-          <WavFooter>
-            {item.voice_downloaded ? (
-              <figure>
-                <audio controls src={`/${item.voice_filepath}`}>
-                  <a href={`/${item.voice_filepath}`}>Download audio</a>
-                </audio>
-              </figure>
-            ) : (
-              ""
-            )}
-            <WavLink target="_blank" href={item.link}>
-              {item.desc}
-            </WavLink>
-          </WavFooter>
-        </WavItem>
+        <WavLink target="_blank" href={item.link}>
+          <WavItem key={i}>
+            <WavHeader>
+              <WavLink target="_blank" href={item.link}>
+                <h3>{item.title}</h3>
+              </WavLink>
+            </WavHeader>
+            <WavMain>
+              <WavImg src={item.imageurl}></WavImg>
+            </WavMain>
+            <WavFooter>
+              {item.voice_downloaded ? (
+                <figure>
+                  <audio controls src={`/${item.voice_filepath}`}>
+                    <a href={`/${item.voice_filepath}`}>Download audio</a>
+                  </audio>
+                </figure>
+              ) : (
+                ""
+              )}
+              <WavDesc>{item.shortdesc.slice(0, 250)}</WavDesc>
+            </WavFooter>
+          </WavItem>
+        </WavLink>
       ))}
     </WavArea>
   );

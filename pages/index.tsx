@@ -2,21 +2,25 @@ import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
+import { useQuery } from "react-query";
 import Button from "react-bootstrap/Button";
-import Form from 'react-bootstrap/Form';
-
+import Form from "react-bootstrap/Form";
 import WavList from "../components/WavList";
 
 const Top = styled.div``;
-
 const Middle = styled.div``;
+const MyCont = styled.div`
+  width: 50%;
+`;
 
 export default function Index() {
-  const [rssList, setRSSList] = useState([]);
+  const { data: rssList, status } = useQuery("rsslist", fetchRSSList);
   const [wavList, setWavList] = useState([]);
   const [rssUrl, setRSSUrl] = useState("");
-  const [selectedRSS, setSelectedRSS] = useState("");
+  const [selectedRSSId, setSelectedRSSId] = useState("");
+  const [wavLoading, setWavLoading] = useState(false);
   function PostRSSClick() {
+    setWavLoading(true);
     fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rss`, {
       method: "POST",
       headers: {
@@ -30,83 +34,96 @@ export default function Index() {
         setRSSUrl("");
         setWavList([]);
         fetchRSSList();
+        setWavLoading(false);
       });
   }
-  function fetchRSSList() {
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rss`)
-      .then((res) => res.json())
-      .then((json) => setRSSList(json));
+  async function fetchRSSList() {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rss`);
+    const json = await res.json();
+    // setRSSList(json)
+    return json;
   }
-  function fetchWavList(id) {
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rss/wavs/${id}`)
-      .then((res) => res.json())
-      .then((json) => {
-        console.log(json[0]);
-        setWavList(json[0].rssItems);
-      });
+  async function fetchWavList(id) {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/rss/wavs/${id}`
+    );
+    const json = await res.json();
+    return json;
   }
-  function RSSSelectChange(e) {
+  async function RSSSelectChange(e) {
     const id = e.target.value;
-    fetchWavList(id);
-    setSelectedRSS(id);
+    const list = await fetchWavList(id);
+    setWavList(list[0].rssItems);
+    setSelectedRSSId(id);
   }
-  function RSSSelectClick() {
-    if (selectedRSS === "") return;
-    fetchWavList(selectedRSS);
+  async function RSSSelectClick() {
+    if (selectedRSSId === "") return;
+    const list = await fetchWavList(selectedRSSId);
+    setWavList(list[0].rssItems);
   }
-  function ReacquireRSSClick() {
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rss/${selectedRSS}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ url: selectedRSS }),
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        console.log(json);
-        setRSSUrl("");
-        setWavList([]);
-        fetchRSSList();
-      });
+  async function ReacquireRSSClick() {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/rss/${selectedRSSId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url: selectedRSSId }),
+      }
+    );
+    const json = res.json();
+    const list = await fetchWavList(selectedRSSId);
+    setWavList(list[0].rssItems);
   }
-  useEffect(() => {
-    fetchRSSList();
-  }, []);
   return (
     <div>
       <Top>
         <h2>RSS</h2>
         <div>
-          <Form.Control
-            type="url"
-            placeholder="rss url"
-            value={rssUrl}
-            onChange={(e) => setRSSUrl(e.target.value)}
-          >
-          </Form.Control>
-          <Button variant="primary" onClick={PostRSSClick}>
-            Post
-          </Button>
+          <MyCont>
+            <Form.Control
+              type="url"
+              placeholder="rss url"
+              value={rssUrl}
+              onChange={(e) => setRSSUrl(e.target.value)}
+            />
+            <Button variant="primary" onClick={PostRSSClick}>
+              RSS登録
+            </Button>
+          </MyCont>
         </div>
-        <Form.Select onChange={RSSSelectChange} value={selectedRSS}>
-          <option>No Selected</option>
-          {rssList.map((rss, i) => (
-            <option key={i} value={rss.id}>
-              {rss.name}
-            </option>
-          ))}
-        </Form.Select>
-        <Button variant="primary" onClick={RSSSelectClick}>
-          記事一覧を表示
-        </Button>
-        <Button variant="primary" onClick={ReacquireRSSClick}>
-          再取得
-        </Button>
+        <MyCont>
+          {status === "loading" && <p>Loading...</p>}
+          {status === "success" && (
+            <Form.Select onChange={RSSSelectChange} value={selectedRSSId}>
+              <option>No Selected</option>
+              {rssList.map((rss, i) => (
+                <option key={i} value={rss.id}>
+                  {rss.name}
+                </option>
+              ))}
+            </Form.Select>
+          )}
+        </MyCont>
+        {selectedRSSId !== "" && (
+          <div>
+            <Button variant="primary" onClick={RSSSelectClick}>
+              記事一覧を表示
+            </Button>
+            <Button variant="primary" onClick={ReacquireRSSClick}>
+              再取得
+            </Button>
+          </div>
+        )}
       </Top>
       <Middle>
         <h2>wav file list </h2>
-        <WavList list={wavList} />
+        {wavLoading ? (
+          <p>Loading...</p>
+        ) : (
+          <WavList list={wavList} />
+        )}
       </Middle>
     </div>
   );

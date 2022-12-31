@@ -50,31 +50,43 @@ export default function Index() {
     const json = await res.json();
     return json;
   }
-  async function RSSSelectChange(e) {
+  function RSSSelectChange(e) {
     const id = e.target.value;
-    const list = await fetchWavList(id);
-    setWavList(list[0].rssItems);
-    setSelectedRSSId(id);
+    setWavLoading(true);
+    new Promise(async (res, rej) => {
+      const list = await fetchWavList(id);
+      setWavList(list[0].rssItems);
+      setSelectedRSSId(id);
+      setWavLoading(false);
+    });
   }
-  async function RSSSelectClick() {
+  function RSSSelectClick() {
     if (selectedRSSId === "") return;
-    const list = await fetchWavList(selectedRSSId);
-    setWavList(list[0].rssItems);
+    setWavLoading(true);
+    new Promise(async (res, rej) => {
+      const list = await fetchWavList(selectedRSSId);
+      setWavList(list[0].rssItems);
+      setWavLoading(false);
+    });
   }
   async function ReacquireRSSClick() {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/rss/${selectedRSSId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url: selectedRSSId }),
-      }
-    );
-    const json = res.json();
-    const list = await fetchWavList(selectedRSSId);
-    setWavList(list[0].rssItems);
+    setWavLoading(true);
+    new Promise(async (resp, rej) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/rss/${selectedRSSId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: selectedRSSId }),
+        }
+      );
+      const json = res.json();
+      const list = await fetchWavList(selectedRSSId);
+      setWavList(list[0].rssItems);
+      setWavLoading(false);
+    });
   }
   return (
     <div>
@@ -119,11 +131,7 @@ export default function Index() {
       </Top>
       <Middle>
         <h2>wav file list </h2>
-        {wavLoading ? (
-          <p>Loading...</p>
-        ) : (
-          <WavList list={wavList} />
-        )}
+        {wavLoading ? <p>Loading...</p> : <WavList list={wavList} />}
       </Middle>
     </div>
   );

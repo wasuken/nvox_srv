@@ -11,7 +11,9 @@ export default async function handler(
   if(req.method === "POST"){
     const rst = await chat(query);
     const text = rst.data.choices[0].text;
-    const path = await createVoice(text);
+    // 重いので消してみる
+    // const path = await createVoice(text);
+    const path = '';
     res.status(200).json({ text, path });
   }
 }

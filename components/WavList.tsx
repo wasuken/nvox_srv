@@ -10,7 +10,6 @@ const WavItem = styled.div`
   border: 1px solid gray;
   border-radius: 15px;
   padding: 10px;
-  height: 400px;
   margin: 5px;
   width: 300px;
   @media screen and (max-width: 700px) {

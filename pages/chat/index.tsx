@@ -5,14 +5,19 @@ import { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 
+const InputArea = styled.div`
+  width: 90vw;
+`;
 const ChatSpace = styled.div`
   height: 50px;
 `;
 
 const ChatLogList = styled.div`
-  width: 80vw;
+  width: 90vw;
   height: 400px;
   overflow: scroll;
+  padding-bottom: 10px;
+height: 70vh;
 `;
 const UserChat = styled.div`
   display: flex;
@@ -25,10 +30,13 @@ const SystemChat = styled.div`
   margin: 5px;
 `;
 const ChatContent = styled.div`
-  width: 300px;
+  width: 500px;
   padding: 20px;
   border: 1px solid blue;
   border-radius: 10px;
+  @media screen and (max-width: 700px) {
+    width: 70vw;
+  }
 `;
 const ChatLogListHeader = styled.div`
   display: flex;
@@ -36,8 +44,8 @@ const ChatLogListHeader = styled.div`
   z-index: 2;
   justify-content: space-evenly;
   padding: 5px;
-  width: 80vw;
-  background: #66666644;
+  width: 90vw;
+  border: 1px solid gray;
 `;
 const ChatLogListHeaderCol = styled.div`
   margin: 3px;
@@ -47,6 +55,9 @@ export default function Index() {
   const [text, setText] = useState("");
   const [chatLog, setChatLog] = useState([]);
   const [loading, setLoading] = useState(false);
+  function ScrollEnd(target) {
+    target.scrollTo(0, target.scrollHeight);
+  }
   function PostChat() {
     if (loading) return;
     setLoading(true);
@@ -63,7 +74,7 @@ export default function Index() {
         text,
         user: 0, // user
       },
-    ]
+    ];
     fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/openai/chat`, {
       method: "POST",
       headers: {
@@ -85,11 +96,15 @@ export default function Index() {
         setLoading(false);
       });
   }
+  useEffect(() => {
+    const logList = document.querySelector("#loglist");
+    ScrollEnd(logList);
+  }, [chatLog.length]);
   return (
     <div>
-      <ChatLogList>
+      <ChatLogList id="loglist">
         <ChatLogListHeader>
-          <ChatLogListHeaderCol>User</ChatLogListHeaderCol>
+          <ChatLogListHeaderCol>User</ChatLogListHeaderCol>|
           <ChatLogListHeaderCol>System</ChatLogListHeaderCol>
         </ChatLogListHeader>
         <ChatSpace />
@@ -113,16 +128,16 @@ export default function Index() {
         )}
         {loading ? "Loading..." : ""}
       </ChatLogList>
-      <div>
+      <InputArea>
         <Form.Control
           onChange={(e) => setText(e.target.value)}
           value={text}
           as="textarea"
           placeholder="Leave a comment here"
         />
-      </div>
+      </InputArea>
       <Button variant="primary" onClick={() => PostChat()}>
-        post
+        POST
       </Button>
     </div>
   );

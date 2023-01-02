@@ -65,7 +65,7 @@ export default function WavList(props) {
           <WavItem key={i}>
             <WavHeader>
               <WavLink target="_blank" href={item.link}>
-                <h3>{item.title}</h3>
+                <h4>{item.title}</h4>
               </WavLink>
             </WavHeader>
             <WavMain>

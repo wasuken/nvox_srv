@@ -11,6 +11,7 @@ const Top = styled.div``;
 const Middle = styled.div``;
 const MyCont = styled.div`
   width: 50%;
+  padding: 15px 0 15px;
 `;
 
 export default function Index() {
@@ -19,6 +20,8 @@ export default function Index() {
   const [rssUrl, setRSSUrl] = useState("");
   const [selectedRSSId, setSelectedRSSId] = useState("");
   const [wavLoading, setWavLoading] = useState(false);
+  const [page, setPage] = useState(0);
+
   function PostRSSClick() {
     setWavLoading(true);
     fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/rss`, {
@@ -88,10 +91,16 @@ export default function Index() {
       setWavLoading(false);
     });
   }
+  function togglePaginate(){
+
+  }
+  useEffect(() => {
+    window.addEventListener('scroll', togglePaginate);
+    return () => window.removeEventListener('scroll', togglePaginate);
+      }, [])
   return (
     <div>
       <Top>
-        <h2>RSS</h2>
         <div>
           <MyCont>
             <Form.Control
@@ -130,7 +139,6 @@ export default function Index() {
         )}
       </Top>
       <Middle>
-        <h2>wav file list </h2>
         {wavLoading ? <p>Loading...</p> : <WavList list={wavList} />}
       </Middle>
     </div>

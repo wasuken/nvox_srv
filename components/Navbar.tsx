@@ -17,6 +17,8 @@ export default function NavBar(props) {
           <Nav className="me-auto">
             <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link href="/chat">Chat</Nav.Link>
+            <Nav.Link href="/joffer">Job Offer</Nav.Link>
+            <Nav.Link href="/naro">なろうWav</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

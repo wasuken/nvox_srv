@@ -1,29 +1,35 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import { createVoice } from './voicevox'
+import { createVoice } from "./voicevox";
 const prisma = new PrismaClient();
 const cheerio = require("cheerio");
 import fs from "fs";
 import fetch from "node-fetch";
 
 async function parseUrlPageHtmlToTextAndImgUrl(url: string) {
-  const res = await fetch(url, { redirect: "manual" });
-  const html = await res.text();
-  const $ = cheerio.load(html);
-  const text = $("body")
-    .html()
-    .replace(/<script[^>]*>[^<]+/gi, "")
-    .replace(/<style[^>]*>[^<]+/gi, "")
-    .replace(/(<([^>]+)>)/gi, "");
-  const imgpath = $("body img").attr("src") ?? '';
-  let imgurl = imgpath;
-  if (!imgpath.startsWith("http") && !imgpath.startsWith("data:image")) {
-    const baseurl = url.split("/").slice(0, 3).join("/");
-    let imgpathh = imgpath;
-    if (imgpathh.startsWith("./")) {
-      // 'hoge/'スタイルへと調整する処理
-      imgpathh = imgpathh.substr(2);
+  let text = "";
+  let imgurl = "";
+  try {
+    const res = await fetch(url, { redirect: "manual" });
+    const html = await res.text();
+    const $ = cheerio.load(html);
+    text = $("body")
+      .html()
+      .replace(/<script[^>]*>[^<]+/gi, "")
+      .replace(/<style[^>]*>[^<]+/gi, "")
+      .replace(/(<([^>]+)>)/gi, "");
+    const imgpath = $("body img").attr("src") ?? "";
+    imgurl = imgpath;
+    if (!imgpath.startsWith("http") && !imgpath.startsWith("data:image")) {
+      const baseurl = url.split("/").slice(0, 3).join("/");
+      let imgpathh = imgpath;
+      if (imgpathh.startsWith("./")) {
+        // 'hoge/'スタイルへと調整する処理
+        imgpathh = imgpathh.substr(2);
+      }
+      imgurl = `${baseurl}/${imgpathh}`;
     }
-    imgurl = `${baseurl}/${imgpathh}`;
+  } catch (e) {
+    console.log('失敗', e);
   }
   return { text, imgurl };
 }
@@ -90,11 +96,11 @@ export async function saveRSSItems(url) {
 export async function cleanWavFiles() {
   const records = await prisma.rSSItem.findMany({
     select: {
-      voice_filepath: true,
+      wavpath: true,
     },
   });
   const idList = records.map((r) =>
-    r.voice_filepath.split("/").pop().split(".").shift()
+    r.wavpath.split("/").pop().split(".").shift()
   );
   fs.readdir(`data/wav/`, (err, files) => {
     if (err) {
@@ -119,8 +125,6 @@ export async function fetchRSS(rss_url) {
   return { items: feed.items, title: feed.title };
 }
 
-
-
 // バッチ処理とかで少しずつ消化していく
 export async function updateRSSItemVoices(n: int) {
   const not_dl_recs = await prisma.rSSItem.findMany({
@@ -143,7 +147,7 @@ export async function updateRSSItemVoices(n: int) {
           id: rec.id,
         },
         data: {
-          voice_filepath: path,
+          wavpath: path,
           voice_downloaded: true,
         },
       });

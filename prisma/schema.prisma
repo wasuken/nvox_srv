@@ -25,7 +25,8 @@ model RSSItem {
   id Int @id @default(autoincrement()) @map("rss_item_id")
   rss_id Int
   RSS_RSSItem_rss RSS @relation("RSS_RSSItem_rss", fields: [rss_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  voice_filepath String?
+  tags RSSItemTag[] @relation("RSSItem_RSSItemTag_rss_item")
+  wavpath String?
   voice_downloaded Boolean @default(false)
   title String
   link String @unique
@@ -37,3 +38,66 @@ model RSSItem {
   @@map("rss_item")
 }
 
+model RSSItemTag {
+  id Int @id @default(autoincrement()) @map("rss_item_tag_id")
+  name String
+  rss_item_id Int
+  RSSItem_RSSItemTag_rss_item RSSItem @relation("RSSItem_RSSItemTag_rss_item", fields: [rss_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  @@map("rss_item_tag")
+}
+
+model Naro {
+  id Int @id @default(autoincrement()) @map("naro_id")
+  title String
+  ncode String @unique
+  totalPage Int
+  works NaroWork[] @relation("Naro_NaroWork")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime  @updatedAt @map(name: "updated_at")
+  @@map("naro")
+}
+
+model NaroWork {
+  id Int @id @default(autoincrement()) @map("naro_work_id")
+  title String
+  contents String @db.Text
+  html String @db.Text
+  wavs NaroWorkWav[] @relation("NaroWork_NaroWorkWav")
+  no Int
+  naro_id Int
+  Naro_NaroWork Naro @relation("Naro_NaroWork", fields: [naro_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime  @updatedAt @map(name: "updated_at")
+  @@map("naro_work")
+}
+
+model NaroWorkWav {
+  id Int @id @default(autoincrement()) @map("naro_work_wav_id")
+  naro_work_id Int
+  NaroWork_NaroWorkWav NaroWork @relation("NaroWork_NaroWorkWav", fields: [naro_work_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  seq_no Int
+  contents String
+  wavpath String
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime  @updatedAt @map(name: "updated_at")
+  @@map("naro_work_wav")
+}
+
+// model JobOfferSearch {
+//   id Int @id @default(autoincrement()) @map("rss_item_id")
+//   sitename String
+//   url String
+//   searchUrl String @map(name: "search_url")
+//   createdAt DateTime  @default(now()) @map(name: "created_at")
+//   updatedAt DateTime  @updatedAt @map(name: "updated_at")
+//   @@map("job_offer_search")
+// }
+// model JobOfferSearchHistory {
+//   id Int @id @default(autoincrement()) @map("rss_item_id")
+//   search_id Int
+//   url String
+//   desc String
+//   createdAt DateTime  @default(now()) @map(name: "created_at")
+//   updatedAt DateTime  @updatedAt @map(name: "updated_at")
+//   @@map("job_offer_search_history")
+// }

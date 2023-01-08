@@ -3,8 +3,7 @@ import Image from "next/image";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { useQuery } from "react-query";
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button"; import Form from "react-bootstrap/Form";
 import WavList from "../components/WavList";
 
 const Top = styled.div``;
@@ -91,13 +90,11 @@ export default function Index() {
       setWavLoading(false);
     });
   }
-  function togglePaginate(){
-
-  }
+  function togglePaginate() {}
   useEffect(() => {
-    window.addEventListener('scroll', togglePaginate);
-    return () => window.removeEventListener('scroll', togglePaginate);
-      }, [])
+    window.addEventListener("scroll", togglePaginate);
+    return () => window.removeEventListener("scroll", togglePaginate);
+  }, []);
   return (
     <div>
       <Top>

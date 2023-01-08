@@ -74,14 +74,19 @@ export default function WavList(props) {
             <WavFooter>
               {item.voice_downloaded ? (
                 <figure>
-                  <audio controls src={`/${item.voice_filepath}`}>
-                    <a href={`/${item.voice_filepath}`}>Download audio</a>
+                  <audio controls src={`/${item.wavpath}`}>
+                    <a href={`/${item.wavpath}`}>Download audio</a>
                   </audio>
                 </figure>
               ) : (
                 ""
               )}
-              <WavDesc>{item.shortdesc.slice(0, 250)}</WavDesc>
+              <WavDesc>
+                {(item.shortdesc.length > 0 ? item.shortdesc : item.desc).slice(
+                  0,
+                  250
+                )}
+              </WavDesc>
             </WavFooter>
           </WavItem>
         </WavLink>

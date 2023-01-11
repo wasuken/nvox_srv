@@ -2,7 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 
@@ -46,7 +46,7 @@ const DebugArea = styled.div`
 const PageLayout = styled.div`
   margin-top: 10px;
   display: flex;
-  height: 90vh;
+  height: 85vh;
 `;
 
 const WavSideBar = styled.div`
@@ -56,6 +56,7 @@ const WavSideBar = styled.div`
   padding: 10px;
   box-shadow: 5px 5px 5px gray;
   margin-left: 5px;
+  overflow: scroll;
 `;
 
 const NaroMainArea = styled.div`
@@ -75,6 +76,7 @@ const NaroInputArea = styled.div`
 
 // naro/index.tsx
 export default function Index() {
+  const queryClient = useQueryClient();
   // 作品選択周り
   const [inputNcode, setInputNcode] = useState("");
   const [ncode, setNcode] = useState("");
@@ -97,7 +99,11 @@ export default function Index() {
     return json;
   }
   function PostNaroClick() {
-    PostNaro().then((res) => console.log(res));
+    PostNaro().then((res) => {
+      console.log(res);
+      queryClient.invalidateQueries("idList");
+      setInputNcode('');
+    });
   }
 
   // 作品の話周り
@@ -141,6 +147,7 @@ export default function Index() {
   function fetchNaroWorks(ncode: string, begin: number, end: number) {
     requestNaroWorks(ncode, begin, end).then((res) => {
       console.log(res);
+      getNaroWork(ncode);
     });
   }
   async function requestNaroWorkWavs(naro_work_id: number) {
@@ -159,6 +166,7 @@ export default function Index() {
   function fetchNaroWorkWavs(naro_work_id: number) {
     requestNaroWorkWavs(naro_work_id).then((res) => {
       console.log(res);
+      getNaroWork(ncode);
     });
   }
 

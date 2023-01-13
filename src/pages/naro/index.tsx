@@ -8,12 +8,12 @@ import Form from "react-bootstrap/Form";
 
 const InputWorkItem = styled.div`
   margin: auto;
-  width: 100px;
+  width: 150px;
 `;
 const InputWorkArea = styled.div`
   display: flex;
   justify-content: space-between;
-  width: 350px;
+  width: 500px;
 `;
 
 const List = styled.ul`
@@ -205,7 +205,7 @@ export default function Index() {
         {ncode !== "" && (
           <NaroWorkManageArea>
             <InputWorkArea>
-              <InputWorkItem>取得範囲</InputWorkItem>
+              <InputWorkItem>取得範囲({naro.totalPage}話)</InputWorkItem>
               <InputWorkItem>
                 <Form.Control
                   type="number"

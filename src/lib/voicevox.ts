@@ -36,8 +36,8 @@ export async function createVoice(text) {
   );
 
   const voice_id = genUUID();
-  const path = `data/wav/${voice_id}.wav`;
-  const dest = fs.createWriteStream(path);
+  const filepath = `/app/data/wav/${voice_id}.wav`;
+  const dest = fs.createWriteStream(filepath);
   sound_row.body.pipe(dest);
-  return path;
+  return filepath;
 }

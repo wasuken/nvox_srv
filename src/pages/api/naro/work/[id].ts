@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient, Prisma } from "@prisma/client";
-import { createNaroWorkWavs } from "../../../../lib/naro";
+import { createNaroWorkWavs } from "@/lib/naro";
 
 const prisma = new PrismaClient();
 

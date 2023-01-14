@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient, Prisma } from "@prisma/client";
-import { saveRSSItems, cleanWavFiles } from "../../lib/rss";
+import { saveRSSItems, cleanWavFiles } from "@/lib/rss";
 
 const prisma = new PrismaClient();
 

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { saveRSSItemsFromId } from '../../../lib/rss'
+import { saveRSSItemsFromId } from '@/lib/rss'
 
 export default async function handler(
   req: NextApiRequest,

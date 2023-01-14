@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient, Prisma } from "@prisma/client";
-import { chat } from "../../../lib/chat";
-import { createVoice } from '../../../lib/voicevox'
+import { chat } from "@/lib/chat";
+import { createVoice } from '@/lib/voicevox'
 
 export default async function handler(
   req: NextApiRequest,

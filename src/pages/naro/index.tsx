@@ -6,6 +6,11 @@ import { useQuery, useQueryClient } from "react-query";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 
+function trimTitle(title: string) {
+  const sepa = " - ";
+  return title.split(sepa).slice(1).join(sepa);
+}
+
 const InputWorkItem = styled.div`
   margin: auto;
   width: 150px;
@@ -102,7 +107,7 @@ export default function Index() {
     PostNaro().then((res) => {
       console.log(res);
       queryClient.invalidateQueries("idList");
-      setInputNcode('');
+      setInputNcode("");
     });
   }
 
@@ -205,7 +210,7 @@ export default function Index() {
         {ncode !== "" && (
           <NaroWorkManageArea>
             <InputWorkArea>
-              <InputWorkItem>取得範囲({naro.totalPage}話)</InputWorkItem>
+              <InputWorkItem>話数({naro.totalPage}話)</InputWorkItem>
               <InputWorkItem>
                 <Form.Control
                   type="number"
@@ -236,7 +241,7 @@ export default function Index() {
                   {workList.map((work, i) => (
                     <li>
                       <div>
-                        {work.no}:{work.title}
+                        {work.no}:{trimTitle(work.title)}
                       </div>
                       <ul>
                         {work.wavs.map((wav, j) => (

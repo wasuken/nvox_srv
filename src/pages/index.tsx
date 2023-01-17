@@ -29,6 +29,12 @@ export default function Index() {
         </h2>
         <div>求人情報の分析を行う</div>
       </div>
+      <div>
+        <h2>
+          <a href="/learn">学習</a>
+        </h2>
+        <div>学習のメモの管理、音声ファイルの生成</div>
+      </div>
     </div>
   );
 }

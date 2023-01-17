@@ -1422,6 +1422,11 @@ cross-spawn@^7.0.3:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
+crunker@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/crunker/-/crunker-2.0.0.tgz#1a1e2420eba4236988f56dc8dddd2d29433b720d"
+  integrity sha512-3edkwpZIIdDzDvLnFD1hi5YLGQHu6EWrbC52LgRZ7X9b7hUbL8Cc3OMeWtPbJ8QuadTU4kSWOgcslkHM1XxR9w==
+
 css-color-keywords@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/css-color-keywords/-/css-color-keywords-1.0.0.tgz"

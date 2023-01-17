@@ -17,6 +17,7 @@
     "@types/styled-components": "^5.1.26",
     "bootstrap": "^5.2.3",
     "cheerio": "^1.0.0-rc.12",
+    "crunker": "^2.0.0",
     "kuromoji": "^0.1.2",
     "next": "13.0.6",
     "openai": "^3.1.0",

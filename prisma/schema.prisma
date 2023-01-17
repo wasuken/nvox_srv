@@ -83,21 +83,41 @@ model NaroWorkWav {
   @@map("naro_work_wav")
 }
 
-// model JobOfferSearch {
-//   id Int @id @default(autoincrement()) @map("rss_item_id")
-//   sitename String
-//   url String
-//   searchUrl String @map(name: "search_url")
-//   createdAt DateTime  @default(now()) @map(name: "created_at")
-//   updatedAt DateTime  @updatedAt @map(name: "updated_at")
-//   @@map("job_offer_search")
-// }
-// model JobOfferSearchHistory {
-//   id Int @id @default(autoincrement()) @map("rss_item_id")
-//   search_id Int
-//   url String
-//   desc String
-//   createdAt DateTime  @default(now()) @map(name: "created_at")
-//   updatedAt DateTime  @updatedAt @map(name: "updated_at")
-//   @@map("job_offer_search_history")
-// }
+// 学習
+// 例：ネスペ、Python、DeepLearning等
+model Learn {
+  id Int @id @default(autoincrement()) @map("learn_id")
+  historyList LearnHistory[] @relation("Learn_History")
+  name String
+  description String
+}
+
+// 学習履歴
+// 例：2020-10-10 00:00:00に行った学習内容
+model LearnHistory {
+  id Int @id @default(autoincrement()) @map("learn_history_id")
+  learn_id Int
+  Learn_History Learn @relation("Learn_History", fields: [learn_id], references: [ id ], onDelete: NoAction, onUpdate: NoAction)
+  items LearnHistoryItem[] @relation("LearnHistory_Item")
+  summary String?
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime  @updatedAt @map(name: "updated_at")
+}
+
+// 学習履歴アイテム
+// 学習内容の内の一つアイテム
+model LearnHistoryItem {
+  id Int @id @default(autoincrement()) @map("learn_history_item_id")
+  learn_history_id Int
+  LearnHistory_Item LearnHistory @relation("LearnHistory_Item", fields: [learn_history_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  wavs LearnHistoryItemWav[] @relation("LearnHistoryItem_Wav")
+  text String
+}
+
+model LearnHistoryItemWav {
+  id Int @id @default(autoincrement()) @map("learn_history_item_wav_id")
+  learn_history_item_id Int
+  LearnHistoryItem_Wav LearnHistoryItem @relation("LearnHistoryItem_Wav", fields: [learn_history_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  wavpath String
+  contents String
+}

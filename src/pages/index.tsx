@@ -25,12 +25,6 @@ export default function Index() {
       </div>
       <div>
         <h2>
-          <a href="/chat">Chat</a>
-        </h2>
-        <div>OpenAIのAPI経由でやりとりできる</div>
-      </div>
-      <div>
-        <h2>
           <a href="/joffer">Job Offer</a>
         </h2>
         <div>求人情報の分析を行う</div>

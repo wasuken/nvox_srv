@@ -36,8 +36,8 @@ const WavImg = styled.img`
   background-size: cover;
   border-radius: 4px;
   display: block;
-  height: 20vh;
-  width: 250px;
+  height: 30vh;
+  width: 15vw;
 `;
 const WavFooter = styled.div`
   margin-top: 20px;

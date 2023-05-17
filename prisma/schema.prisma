@@ -75,9 +75,11 @@ model NaroWorkWav {
   id Int @id @default(autoincrement()) @map("naro_work_wav_id")
   naro_work_id Int
   NaroWork_NaroWorkWav NaroWork @relation("NaroWork_NaroWorkWav", fields: [naro_work_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  seq_no Int
+  seq_no Int @default(0)
   contents String
-  wavpath String
+  wavpath String?
+  wav_web_path String?
+  voice_downloaded Boolean @default(false)
   createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime  @updatedAt @map(name: "updated_at")
   @@map("naro_work_wav")

@@ -1,19 +1,3 @@
-import Head from "next/head";
-import Image from "next/image";
-import styled from "styled-components";
-import { useState, useEffect } from "react";
-import { useQuery } from "react-query";
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import WavList from "../components/WavList";
-
-const Top = styled.div``;
-const Middle = styled.div``;
-const MyCont = styled.div`
-  width: 50%;
-  padding: 15px 0 15px;
-`;
-
 export default function Index() {
   return (
     <div>

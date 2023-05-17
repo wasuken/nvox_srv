@@ -12,19 +12,24 @@ const InputDescArea = styled.div``;
 const InputButtonArea = styled.div``;
 const LearnListArea = styled.div``;
 
+interface Learn {
+  id: string;
+  name: string;
+}
+
 export default function Index() {
-  const queryClient = useQueryClient();
-  const { data: learnList, status } = useQuery("learnList", fetchList);
-  const [loading, setLoading] = useState(false);
+  // const queryClient = useQueryClient();
+  const { data: learnList } = useQuery<Learn[]>("learnList", fetchList);
+  const [_loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
-  const mut = useMutation(post, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("learnList");
-      setName("");
-      setDesc("");
-    },
-  });
+  // const mut = useMutation(post, {
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries("learnList");
+  //     setName("");
+  //     setDesc("");
+  //   },
+  // });
   async function fetchList() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/learn`);
     const json = await res.json();
@@ -61,8 +66,8 @@ export default function Index() {
           <h3>学習概要(任意)</h3>
           <div>
             <textarea
-              cols="30"
-              rows="10"
+              cols={30}
+              rows={10}
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
             ></textarea>
@@ -76,13 +81,12 @@ export default function Index() {
         <h3>学習一覧</h3>
         <div>
           <ul>
-            {learnList.map((learn, i) => (
-              <li key={i}>
-              <a href={`/learn/${learn.id}`}>
-              {learn.name}
-              </a>
-              </li>
-            ))}
+            {learnList &&
+              learnList.map((learn, i) => (
+                <li key={i}>
+                  <a href={`/learn/${learn.id}`}>{learn.name}</a>
+                </li>
+              ))}
           </ul>
         </div>
       </LearnListArea>

@@ -1,14 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { updateRSSItemVoices } from '@/lib/rss'
+import { updateRSSItemVoices } from "@/lib/rss";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  let { n } = req.query
-  n = parseInt(n);
+  const { n: _n } = req.query;
+  const sn = _n as string;
+  const n = parseInt(sn);
   if (req.method === "POST") {
-    if(n > 10) {
+    if (n > 10) {
       res.status(400).json({ msg: "invalid n, too many" });
       return;
     }

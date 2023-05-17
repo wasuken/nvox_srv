@@ -1,5 +1,3 @@
-import Head from "next/head";
-import Image from "next/image";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { useQuery } from "react-query";
@@ -16,13 +14,17 @@ const MyCont = styled.div`
   padding: 15px 0 15px;
 `;
 
+interface RSS {
+  id: number;
+  name: string;
+}
+
 export default function Index() {
-  const { data: rssList, status } = useQuery("rsslist", fetchRSSList);
+  const { data: rssList, status } = useQuery<RSS[]>("rsslist", fetchRSSList);
   const [wavList, setWavList] = useState([]);
   const [rssUrl, setRSSUrl] = useState("");
-  const [selectedRSSId, setSelectedRSSId] = useState("");
+  const [selectedRSSId, setSelectedRSSId] = useState(0);
   const [wavLoading, setWavLoading] = useState(false);
-  const [page, setPage] = useState(0);
 
   function PostRSSClick() {
     setWavLoading(true);
@@ -48,36 +50,27 @@ export default function Index() {
     // setRSSList(json)
     return json;
   }
-  async function fetchWavList(id) {
+  async function fetchWavList(id: number) {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/rss/wavs/${id}`
     );
     const json = await res.json();
     return json;
   }
-  function RSSSelectChange(e) {
-    const id = e.target.value;
+  function RSSSelectChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const id = parseInt(e.target.value);
     setWavLoading(true);
-    new Promise(async (res, rej) => {
+    new Promise(async (_res, _rej) => {
       const list = await fetchWavList(id);
       setWavList(list[0].rssItems);
       setSelectedRSSId(id);
       setWavLoading(false);
     });
   }
-  function RSSSelectClick() {
-    if (selectedRSSId === "") return;
-    setWavLoading(true);
-    new Promise(async (res, rej) => {
-      const list = await fetchWavList(selectedRSSId);
-      setWavList(list[0].rssItems);
-      setWavLoading(false);
-    });
-  }
   async function ReacquireRSSClick() {
     setWavLoading(true);
-    new Promise(async (resp, rej) => {
-      const res = await fetch(
+    new Promise(async (_resp, _res) => {
+      await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/rss/${selectedRSSId}`,
         {
           method: "PUT",
@@ -87,7 +80,6 @@ export default function Index() {
           body: JSON.stringify({ url: selectedRSSId }),
         }
       );
-      const json = res.json();
       const list = await fetchWavList(selectedRSSId);
       setWavList(list[0].rssItems);
       setWavLoading(false);
@@ -101,7 +93,7 @@ export default function Index() {
   return (
     <div>
       <Top>
-        {admin === true && (
+        {admin && (
           <div>
             <MyCont>
               <Form.Control
@@ -129,9 +121,9 @@ export default function Index() {
             </Form.Select>
           )}
         </MyCont>
-        {selectedRSSId !== "" && (
+        {selectedRSSId !== 0 && (
           <div>
-            {admin === true && (
+            {admin && (
               <Button variant="primary" onClick={ReacquireRSSClick}>
                 再取得
               </Button>

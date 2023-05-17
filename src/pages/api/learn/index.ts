@@ -11,10 +11,7 @@ export default async function handler(
     const list = await prisma.learn.findMany();
     res.status(200).json(list);
   } else if (req.method === "POST") {
-    const defaultParam = {
-      description: "",
-    };
-    const { name, description } = { ...defaultParam, ...req.body };
+    const { name, description } = req.body;
     if (!name) return res.status(400).json({ msg: "name is empty" });
 
     await prisma.learn.create({

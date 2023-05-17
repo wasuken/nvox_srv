@@ -57,7 +57,21 @@ const WavDesc = styled.div`
 `;
 const WavLink = styled.a``;
 
-export default function WavList(props) {
+interface WavItem {
+  link: string;
+  title: string;
+  voice_downloaded: boolean;
+  imageurl: string;
+  shortdesc: string;
+  wavpath: string;
+  desc: string;
+}
+
+interface Props {
+  list: WavItem[];
+}
+
+export default function WavList(props: Props) {
   return (
     <WavArea>
       {props.list.map((item, i) => (

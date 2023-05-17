@@ -10,25 +10,29 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     // id: naro_work_id
-    const { id: sid } = req.query;
+    const { id: _id } = req.query;
+    const sid = _id as string;
     const id = parseInt(sid);
     await createNaroWorkWavs(id);
     res.status(200).json({ msg: "success" });
   } else if (req.method === "GET") {
-    const { id: sid } = req.query;
+    const { id: _id } = req.query;
+    const sid = _id as string;
     const naro_work_id = parseInt(sid);
     const result = await prisma.naroWork.findFirst({
       where: {
-        naro_work_id,
+        id: naro_work_id,
       },
       include: {
         wavs: true,
       },
     });
-    let wavs = [];
-    if (result !== null && ncode !== undefined) wavs = result.wavs;
+    if (result) {
+      res.status(200).json(result.wavs);
+      return;
+    }
+    res.status(400);
     // 一覧
-    res.status(200).json(wavs);
   }
   return;
 }

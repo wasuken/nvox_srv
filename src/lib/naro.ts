@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 const { setTimeout } = require("timers/promises");
 const cheerio = require("cheerio");
 
@@ -40,18 +40,21 @@ export async function createNaro(ncode: string) {
 
 // 既存情報が存在する場合、更新しない。
 // 作品Wav登録
-export async function createNaroWorks(ncode: string, begin: int, end: int) {
+export async function createNaroWorks(
+  ncode: string,
+  begin: number,
+  end: number
+) {
   // レコードを取得
   const naro = await prisma.naro.findFirst({
     where: {
       ncode,
     },
   });
-  const naro_id = naro.id;
-  if (naro === undefined) {
+  if (!naro) {
     throw new Error(`ncode(${ncode}) not found`);
-    return;
   }
+  const naro_id = naro.id;
   // レコードから最大話数を取得
   const nums = Array.from(Array(naro.totalPage - 1), (v, k) => k + 1).filter(
     (v) => v <= end
@@ -60,20 +63,19 @@ export async function createNaroWorks(ncode: string, begin: int, end: int) {
   if (nums.length <= 0) {
     console.log("debug", [[begin, end], naro]);
     throw new Error(`work <= ${end}`);
-    return;
   }
   const already_recs = await prisma.naroWork.findMany({
     where: {
       naro_id,
-    }
-  })
+    },
+  });
   const already_nums = already_recs.map((rec) => rec.no);
   const naro_work_base_url = `${NARO_BASE_URL}${ncode}/`;
   // なろう小説作品URLからコンテンツを取得
-  const data = await Promise.all(
+  await Promise.all(
     nums.map(async (no, i) => {
       // すでに存在する場合、処理しない
-      if(already_nums.includes(no)) return;
+      if (already_nums.includes(no)) return;
       const res = await setTimeout(i * 1000, "wait:" + i);
       // URLからコンテンツ(text, html)を取得
       const url = `${naro_work_base_url}${no}/`;
@@ -98,12 +100,12 @@ export async function createNaroWorks(ncode: string, begin: int, end: int) {
   );
 }
 
-function sliceByNumber(array, num) {
-  const length = Math.ceil(array.length / num);
-  return new Array(length)
-    .fill()
-    .map((_, i) => array.slice(i * num, (i + 1) * num));
-}
+// function sliceByNumber(array, num) {
+//   const length = Math.ceil(array.length / num);
+//   return new Array(length)
+//     .fill()
+//     .map((_, i) => array.slice(i * num, (i + 1) * num));
+// }
 
 // 既存情報については削除する
 // NaroWorkに対応する複数のWavを生成する
@@ -120,18 +122,12 @@ export async function createNaroWorkWavs(naro_work_id: number) {
     },
   });
   const contents = naroWork?.contents;
-  const readContentsList = sliceByNumber(contents, 500);
-  const total = readContentsList.length;
-  for (let i = 0; i < total; i++) {
-    console.log("info", `[${i + 1}/${total}] create wav file...`);
-    const text = readContentsList[i];
-    const wavpath = await createVoice(text);
+  if (contents) {
     await prisma.naroWorkWav.create({
       data: {
+        seq_no: 0,
         naro_work_id,
-        seq_no: i,
-        contents: text,
-        wavpath,
+        contents: contents,
       },
     });
   }

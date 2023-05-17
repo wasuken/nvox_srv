@@ -1,5 +1,9 @@
 import fs from "fs";
 import fetch from "node-fetch";
+import { concatenateAudioBuffers } from "./wav";
+import { pipeline } from "stream";
+import { info } from "console";
+import { promisify } from "util";
 
 function genUUID() {
   return "xxxxxxxx_xxxx_4xxx_yxxx_xxxxxxxxxxxx".replace(/[xy]/g, function (a) {
@@ -9,7 +13,56 @@ function genUUID() {
   });
 }
 
-export async function createVoice(text) {
+function wavToArrayBuffer(filePath: string) {
+  const buffer = fs.readFileSync(filePath);
+  const arrayBuffer = buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  );
+  return arrayBuffer;
+}
+export async function createVoice(text: string) {
+  if (text.length < 200) {
+    return createShortVoice(text);
+  }
+  return createVoiceFromLongString(text);
+}
+
+async function createVoiceFromLongString(text: string) {
+  let chunkSize = 200;
+  let chunks = [];
+  for (let i = 0, len = text.length; i < len; i += chunkSize) {
+    chunks.push(text.slice(i, i + chunkSize));
+  }
+  let pathList = [];
+  let ab = null;
+  for (let i = 0; i < chunks.length; i++) {
+    const t = chunks[i];
+    const fpath = await createShortVoice(t);
+    pathList.push(fpath);
+    if (ab) {
+      ab = concatenateAudioBuffers(ab, wavToArrayBuffer(fpath));
+    } else {
+      ab = wavToArrayBuffer(fpath);
+    }
+  }
+  if (ab) {
+    const wavPath = writeWavFile(ab);
+    return wavPath;
+  }
+  return null;
+}
+
+// wavファイルを書き込む関数
+function writeWavFile(arrayBuffer: ArrayBuffer) {
+  const voice_id = genUUID();
+  const filepath = `/app/data/wav/${voice_id}.wav`;
+  const buffer = Buffer.from(arrayBuffer);
+  fs.writeFileSync(filepath, buffer);
+  return filepath;
+}
+
+async function createShortVoice(text: string) {
   const res = await fetch(
     `http://voicevox_engine:50021/audio_query?text=${text}&speaker=0`,
     {
@@ -36,8 +89,22 @@ export async function createVoice(text) {
   );
 
   const voice_id = genUUID();
+  // ベタガキ「ざぁこ、ネーミングざこ」
   const filepath = `/app/data/wav/${voice_id}.wav`;
-  const dest = fs.createWriteStream(filepath);
-  sound_row.body.pipe(dest);
+  await download(sound_row, filepath);
   return filepath;
+}
+
+const finished = promisify(require("stream").finished);
+
+async function download(response: Response, dest: string): Promise<void> {
+  const destStream = fs.createWriteStream(dest);
+  await new Promise<void>((resolve, reject) => {
+    if (response.body) {
+      response.body.pipe(destStream);
+      destStream.on("close", resolve);
+      destStream.on("error", reject);
+    }
+  });
+  await finished(destStream);
 }

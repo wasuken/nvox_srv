@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { createNaroWorks, createNaro } from "@/lib/naro";
 
 const prisma = new PrismaClient();
@@ -30,7 +30,7 @@ export default async function handler(
     const begin = parseInt(sBegin);
     const end = parseInt(sEnd);
     await createNaroWorks(ncode, begin, end);
-    res.status(200).json(rst);
+    res.status(200).json({ msg: "success" });
   }
   return;
 }

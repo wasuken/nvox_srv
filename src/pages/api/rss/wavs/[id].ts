@@ -8,9 +8,11 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { id, page: req_page } = req.query
-  const qid = parseInt(id);
-  let page = parseInt(req_page ?? "0");
+  const { id: _id, page: _page } = req.query;
+  const sid = _id as string;
+  const qid = parseInt(sid);
+  const spage = _page as string;
+  let page = parseInt(spage);
   const skip = page * perPage;
   const take = perPage;
   if (req.method === "GET") {
@@ -18,11 +20,11 @@ export default async function handler(
       include: {
         rssItems: {
           orderBy: {
-            createdAt: "desc"
+            createdAt: "desc",
           },
           skip,
           take,
-        }
+        },
       },
       where: {
         id: qid,

@@ -9,14 +9,17 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    const { ncode } = req.query;
+    const { ncode: _ncode } = req.query;
+    const ncode = _ncode as string;
     const { begin: sBegin, end: sEnd } = req.body;
     const begin = parseInt(sBegin);
     const end = parseInt(sEnd);
     await createNaroWorks(ncode, begin, end);
     res.status(200).json({ msg: "success" });
+    return;
   } else if (req.method === "GET") {
-    const { ncode } = req.query;
+    const { ncode: _ncode } = req.query;
+    const ncode = _ncode as string;
     const result = await prisma.naro.findFirst({
       where: {
         ncode,
@@ -24,15 +27,18 @@ export default async function handler(
       include: {
         works: {
           include: {
-            wavs: true
-          }
+            wavs: true,
+          },
         },
       },
     });
-    let works = [];
-    if (result !== null && ncode !== undefined) works = result.works;
+    if (result) {
+      res.status(200).json(result.works);
+      return;
+    }
+    return res.status(400);
     // 一覧
-    res.status(200).json(works);
+    return;
   }
   return;
 }

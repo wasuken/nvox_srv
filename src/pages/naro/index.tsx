@@ -6,78 +6,31 @@ import { useQuery, useQueryClient } from "react-query";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 
+const DEBUG = false;
+
 function trimTitle(title: string) {
   const sepa = " - ";
   return title.split(sepa).slice(1).join(sepa);
 }
 
-const InputWorkItem = styled.div`
-  margin: auto;
-  width: 150px;
-`;
-const InputWorkArea = styled.div`
-  display: flex;
-  justify-content: space-between;
-  width: 500px;
-`;
+interface Naro {
+  ncode: string;
+  title: string;
+  totalPage: number;
+}
 
-const List = styled.ul`
-  padding: 5px 10px 20px 10px;
-`;
+interface NaroWork {
+  title: string;
+  wavs: NaroWorkWav[];
+  id: number;
+  no: number;
+}
 
-const ListItem = styled.li`
-  list-style-type: none;
-  cursor: pointer;
-  border-bottom: 1px solid gray;
-  margin-bottom: 10px;
-`;
-
-const NaroWorkManageArea = styled.div`
-  padding: 10px;
-  border: 1px solid red;
-  border-radius: 15px;
-  margin: 10px;
-  overflow: scroll;
-`;
-
-const DebugArea = styled.div`
-  padding: 10px;
-  border: 1px solid red;
-  border-radius: 15px;
-  margin: 10px;
-`;
-
-// サイドバーとメインで構成
-const PageLayout = styled.div`
-  margin-top: 10px;
-  display: flex;
-  height: 85vh;
-`;
-
-const WavSideBar = styled.div`
-  width: 20vw;
-  border: 1px solid gray;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 5px 5px 5px gray;
-  margin-left: 5px;
-  overflow: scroll;
-`;
-
-const NaroMainArea = styled.div`
-  width: 75vw;
-  border: 1px solid gray;
-  border-radius: 10px;
-  margin-left: 10px;
-  box-shadow: 5px 5px 5px gray;
-  overflow: scroll;
-`;
-const NaroInputArea = styled.div`
-  padding: 10px;
-  border: 2px solid #88112255;
-  border-radius: 15px;
-  margin: 10px;
-`;
+interface NaroWorkWav {
+  wavpath: string;
+  wav_web_path: string;
+  voice_downloaded: boolean;
+}
 
 // naro/index.tsx
 export default function Index() {
@@ -85,13 +38,16 @@ export default function Index() {
   // 作品選択周り
   const [inputNcode, setInputNcode] = useState("");
   const [ncode, setNcode] = useState("");
-  const [naro, setNaro] = useState(null);
+  const [naro, setNaro] = useState<Naro | null>(null);
   async function fetchIdList() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/naro`);
     const json = await res.json();
     return json;
   }
-  const { data: idList, status: fetchStatus } = useQuery("idList", fetchIdList);
+  const { data: idList, status: fetchStatus } = useQuery<Naro[]>(
+    "idList",
+    fetchIdList
+  );
   async function PostNaro() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/naro`, {
       method: "POST",
@@ -113,7 +69,7 @@ export default function Index() {
 
   // 作品の話周り
   const [workFetchStatus, setWorkFetchStatus] = useState("success");
-  const [workList, setWorkList] = useState([]);
+  const [workList, setWorkList] = useState<NaroWork[]>([]);
   const [begin, setBegin] = useState(0);
   const [end, setEnd] = useState(0);
   async function fetchWorkList(ncode: string) {
@@ -125,8 +81,15 @@ export default function Index() {
     return json;
   }
   function getNaroWork(ncode: string) {
+    if (!idList) {
+      return;
+    }
+    const fncode = idList.find((x) => x.ncode === ncode);
+    if (!idList || !fncode) {
+      return;
+    }
     setNcode(ncode);
-    setNaro(idList.find((x) => x.ncode === ncode));
+    setNaro(fncode);
     setWorkList([]);
     setWorkFetchStatus("loading");
     fetchWorkList(ncode).then((json) => {
@@ -202,12 +165,14 @@ export default function Index() {
         </List>
       </WavSideBar>
       <NaroMainArea>
-        <DebugArea>
-          <h3>Debug Area</h3>
-          <div>fetchStatus: {fetchStatus}</div>
-          <div>workFetchStatus: {workFetchStatus}</div>
-        </DebugArea>
-        {ncode !== "" && (
+        {DEBUG && (
+          <DebugArea>
+            <h3>Debug Area</h3>
+            <div>fetchStatus: {fetchStatus}</div>
+            <div>workFetchStatus: {workFetchStatus}</div>
+          </DebugArea>
+        )}
+        {naro && (
           <NaroWorkManageArea>
             <InputWorkArea>
               <InputWorkItem>話数({naro.totalPage}話)</InputWorkItem>
@@ -234,7 +199,7 @@ export default function Index() {
                 Fetch
               </Button>
             </InputWorkArea>
-            {naro !== null && (
+            {naro && (
               <div>
                 <div>選択中: "{naro.title}"</div>
                 <List>
@@ -244,13 +209,19 @@ export default function Index() {
                         {work.no}:{trimTitle(work.title)}
                       </div>
                       <ul>
-                        {work.wavs.map((wav, j) => (
-                          <figure>
-                            <audio controls src={`/${wav.wavpath}`}>
-                              <a href={`/${wav.wavpath}`}>Download audio</a>
-                            </audio>
-                          </figure>
-                        ))}
+                        {work.wavs.map((wav, j) =>
+                          wav.voice_downloaded ? (
+                            <figure key={j}>
+                              <audio controls src={`${wav.wav_web_path}`}>
+                                <a href={`${wav.wav_web_path}`}>
+                                  Download audio
+                                </a>
+                              </audio>
+                            </figure>
+                          ) : (
+                            <div>waiting download...</div>
+                          )
+                        )}
                       </ul>
                       <div>
                         <Button
@@ -271,3 +242,89 @@ export default function Index() {
     </PageLayout>
   );
 }
+
+const InputWorkItem = styled.div`
+  margin: auto;
+  width: 150px;
+`;
+const InputWorkArea = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 500px;
+  @media screen and (max-width: 767px) {
+    flex-flow: column;
+    width: 50vw;
+  }
+`;
+
+const List = styled.ul`
+  padding: 5px 10px 20px 10px;
+`;
+
+const ListItem = styled.li`
+  list-style-type: none;
+  cursor: pointer;
+  border-bottom: 1px solid gray;
+  margin-bottom: 10px;
+`;
+
+const NaroWorkManageArea = styled.div`
+  padding: 10px;
+  border: 1px solid red;
+  border-radius: 15px;
+  margin: 10px;
+  overflow: scroll;
+`;
+
+const DebugArea = styled.div`
+  padding: 10px;
+  border: 1px solid red;
+  border-radius: 15px;
+  margin: 10px;
+`;
+
+// サイドバーとメインで構成
+const PageLayout = styled.div`
+  margin-top: 10px;
+  display: flex;
+  height: 85vh;
+  @media screen and (max-width: 767px) {
+    flex-flow: column;
+    gap: 10px;
+  }
+`;
+
+const WavSideBar = styled.div`
+  width: 20vw;
+  border: 1px solid gray;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 5px 5px 5px gray;
+  margin-left: 5px;
+  overflow: scroll;
+  @media screen and (max-width: 767px) {
+    width: 90vw;
+  }
+`;
+
+const NaroMainArea = styled.div`
+  width: 75vw;
+  border: 1px solid gray;
+  border-radius: 10px;
+  margin-left: 10px;
+  box-shadow: 5px 5px 5px gray;
+  overflow: scroll;
+  @media screen and (max-width: 767px) {
+    width: 90vw;
+    display: flex;
+    flex-flow: column;
+    gap: 20px;
+    height: 100vh;
+  }
+`;
+const NaroInputArea = styled.div`
+  padding: 10px;
+  border: 2px solid #88112255;
+  border-radius: 15px;
+  margin: 10px;
+`;

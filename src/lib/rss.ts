@@ -29,22 +29,31 @@ async function parseUrlPageHtmlToTextAndImgUrl(url: string) {
       imgurl = `${baseurl}/${imgpathh}`;
     }
   } catch (e) {
-    console.log('失敗', e);
+    console.log("失敗", e);
   }
   return { text, imgurl };
 }
 
-export async function saveRSSItemsFromId(id) {
+interface RSSItem {
+  link: string;
+  title: string;
+  "content:encodedSnippet": string;
+}
+
+export async function saveRSSItemsFromId(id: number) {
   const record = await prisma.rSS.findFirst({
     where: {
       id: id,
     },
   });
+  if (!record) {
+    return;
+  }
   // ここで本文抽出〜テキスト生成
-  const { items, title } = await fetchRSS(record.url);
+  const { items } = await fetchRSS(record.url);
 
   const rss_item_records = await Promise.all(
-    items.map(async (rss_item) => {
+    items.map(async (rss_item: RSSItem) => {
       const contents = rss_item["content:encodedSnippet"];
       const { text, imgurl } = await parseUrlPageHtmlToTextAndImgUrl(
         rss_item.link
@@ -65,7 +74,7 @@ export async function saveRSSItemsFromId(id) {
   });
 }
 
-export async function saveRSSItems(url) {
+export async function saveRSSItems(url: string) {
   // ここで本文抽出〜テキスト生成
   const { items, title } = await fetchRSS(url);
 
@@ -76,7 +85,7 @@ export async function saveRSSItems(url) {
     },
   });
 
-  const rss_item_records = items.map((rss_item) => {
+  const rss_item_records = items.map((rss_item: RSSItem) => {
     const contents = rss_item["content:encodedSnippet"];
     const text = rss_item.title + "\n" + contents;
     return {
@@ -99,16 +108,27 @@ export async function cleanWavFiles() {
       wavpath: true,
     },
   });
-  const idList = records.map((r) =>
-    r.wavpath.split("/").pop().split(".").shift()
-  );
+  if (!records) {
+    return;
+  }
+  const getWavId = (wavpath: string | null) => {
+    if (!wavpath) return "";
+    const sp = wavpath.split("/");
+    const p = sp.pop();
+    if (!p) return "";
+    const psp = p.split(".");
+    return psp.shift();
+  };
+  const idList = records
+    .map((r) => getWavId(r.wavpath))
+    .filter((r) => r && r.length > 0);
   fs.readdir(`data/wav/`, (err, files) => {
     if (err) {
       console.log("error", err);
       return;
     }
     files.forEach((file) => {
-      const wavId = file.split("/").pop().split(".").shift();
+      const wavId = getWavId(file);
       if (!idList.includes(wavId)) {
         console.log("remove", file);
         // fs.unlinkSync(file);
@@ -117,7 +137,7 @@ export async function cleanWavFiles() {
   });
 }
 
-export async function fetchRSS(rss_url) {
+export async function fetchRSS(rss_url: string) {
   const Parser = require("rss-parser");
   const parser = new Parser();
   const feed = await parser.parseURL(rss_url);
@@ -126,7 +146,7 @@ export async function fetchRSS(rss_url) {
 }
 
 // バッチ処理とかで少しずつ消化していく
-export async function updateRSSItemVoices(n: int) {
+export async function updateRSSItemVoices(n: number) {
   const not_dl_recs = await prisma.rSSItem.findMany({
     take: n,
     where: {
@@ -141,6 +161,7 @@ export async function updateRSSItemVoices(n: int) {
   await Promise.all(
     not_dl_recs.map(async (rec) => {
       const text = rec.shortdesc;
+      if (!text) return;
       const path = await createVoice(text);
       await prisma.rSSItem.update({
         where: {

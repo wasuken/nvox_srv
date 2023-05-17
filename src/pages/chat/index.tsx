@@ -17,7 +17,7 @@ const ChatLogList = styled.div`
   height: 400px;
   overflow: scroll;
   padding-bottom: 10px;
-height: 70vh;
+  height: 70vh;
 `;
 const UserChat = styled.div`
   display: flex;
@@ -51,12 +51,20 @@ const ChatLogListHeaderCol = styled.div`
   margin: 3px;
 `;
 
+interface ChatLog {
+  text: string;
+  user: number;
+  path: string;
+}
+
 export default function Index() {
   const [text, setText] = useState("");
-  const [chatLog, setChatLog] = useState([]);
+  const [chatLog, setChatLog] = useState<ChatLog[]>([]);
   const [loading, setLoading] = useState(false);
-  function ScrollEnd(target) {
-    target.scrollTo(0, target.scrollHeight);
+  function ScrollEnd(target: Element | null) {
+    if (target) {
+      target.scrollTo(0, target.scrollHeight);
+    }
   }
   function PostChat() {
     if (loading) return;
@@ -66,6 +74,7 @@ export default function Index() {
       {
         text,
         user: 0, // user
+        path: "",
       },
     ]);
     const updatedChatLog = [
@@ -73,6 +82,7 @@ export default function Index() {
       {
         text,
         user: 0, // user
+        path: "",
       },
     ];
     fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/openai/chat`, {

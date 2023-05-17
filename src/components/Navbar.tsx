@@ -7,7 +7,7 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 
-export default function NavBar(props) {
+export default function NavBar() {
   return (
     <Navbar bg="light" expand="lg">
       <Container fluid>
@@ -19,6 +19,7 @@ export default function NavBar(props) {
             <Nav.Link href="/rss">RSS</Nav.Link>
             <Nav.Link href="/chat">Chat</Nav.Link>
             <Nav.Link href="/joffer">Job Offer</Nav.Link>
+            <Nav.Link href="/naro">なろう</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

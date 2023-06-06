@@ -25,12 +25,6 @@ export default async function handler(
     });
     // 一覧
     res.status(200).json(rst);
-  } else if (req.method === "PUT") {
-    const { sBegin, sEnd, ncode } = req.body;
-    const begin = parseInt(sBegin);
-    const end = parseInt(sEnd);
-    await createNaroWorks(ncode, begin, end);
-    res.status(200).json({ msg: "success" });
   }
   return;
 }

@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient, Prisma } from "@prisma/client";
-import { createNaroWorks } from "@/lib/naro";
+import { createNaroWorks, updateNaro } from "@/lib/naro";
 
 const prisma = new PrismaClient();
 
@@ -8,18 +8,17 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const { ncode: _ncode } = req.query;
+  const ncode = _ncode as string;
   if (req.method === "POST") {
-    const { ncode: _ncode } = req.query;
-    const ncode = _ncode as string;
     const { begin: sBegin, end: sEnd } = req.body;
     const begin = parseInt(sBegin);
     const end = parseInt(sEnd);
+    await updateNaro(ncode);
     await createNaroWorks(ncode, begin, end);
     res.status(200).json({ msg: "success" });
     return;
   } else if (req.method === "GET") {
-    const { ncode: _ncode } = req.query;
-    const ncode = _ncode as string;
     const result = await prisma.naro.findFirst({
       where: {
         ncode,
@@ -36,9 +35,15 @@ export default async function handler(
       res.status(200).json(result.works);
       return;
     }
-    return res.status(400);
+    res.status(200).json({ msg: "empty." });
     // 一覧
     return;
+  } else if (req.method === "PUT") {
+    const { sBegin, sEnd } = req.body;
+    const begin = parseInt(sBegin);
+    const end = parseInt(sEnd);
+    await createNaroWorks(ncode, begin, end);
+    res.status(200).json({ msg: "success" });
   }
   return;
 }

@@ -1,3 +1,5 @@
+import wav from "wav";
+import fs from "fs";
 export function concatenateAudioBuffers(
   buffer1: ArrayBuffer,
   buffer2: ArrayBuffer

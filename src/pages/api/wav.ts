@@ -1,6 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
 import { createVoice } from "@/lib/voicevox";
+import fs from "fs";
+import path from "path";
 
 const prisma = new PrismaClient();
 
@@ -49,6 +51,30 @@ export default async function handler(
     } else {
       res.status(200).json({ msg: `not found wavs` });
     }
+    return;
+  } else if (req.method === "DELETE") {
+    const wavPath = `${process.env.PROJECT_BASE_PATH}/data/wav/`;
+    // 参照されてないファイルを削除する
+    // TODO RSSItem, LearnItemも使う場合、その削除処理も作る
+
+    const wavRecords = await prisma.naroWorkWav.findMany();
+    const wavPathList = wavRecords.map((w) => path.basename(w.wavpath ?? ""));
+
+    fs.readdirSync(wavPath)
+      .filter((fname) => !wavPathList.includes(fname))
+      .forEach((fname) => {
+        const fpath = `${wavPath}${fname}`;
+        fs.unlink(fpath, (err) => {
+          if (err) {
+            console.error("error failed in file removing", err);
+            return;
+          }
+          console.log(`${fpath} deleted.`);
+        });
+      });
+    res.status(200).json({
+      msg: `removed.`,
+    });
     return;
   }
   res.status(400).json({ msg: "not support." });

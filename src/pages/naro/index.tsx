@@ -1,5 +1,3 @@
-import Head from "next/head";
-import Image from "next/image";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "react-query";
@@ -64,6 +62,7 @@ export default function Index() {
       console.log(res);
       queryClient.invalidateQueries("idList");
       setInputNcode("");
+      alert("登録完了しました");
     });
   }
 
@@ -116,6 +115,7 @@ export default function Index() {
     requestNaroWorks(ncode, begin, end).then((res) => {
       console.log(res);
       getNaroWork(ncode);
+      alert("Fetch成功");
     });
   }
   async function requestNaroWorkWavs(naro_work_id: number) {
@@ -201,14 +201,14 @@ export default function Index() {
             </InputWorkArea>
             {naro && (
               <div>
-                <div>選択中: "{naro.title}"</div>
+                <NaroTitle>{naro.title}</NaroTitle>
                 <List>
                   {workList.map((work, i) => (
-                    <li>
+                    <ListItem>
                       <div>
                         {work.no}:{trimTitle(work.title)}
                       </div>
-                      <ul>
+                      <WavArea>
                         {work.wavs.map((wav, j) =>
                           wav.voice_downloaded ? (
                             <figure key={j}>
@@ -222,16 +222,17 @@ export default function Index() {
                             <div>waiting download...</div>
                           )
                         )}
-                      </ul>
+                      </WavArea>
                       <div>
                         <Button
                           variant="primary"
                           onClick={() => fetchNaroWorkWavs(work.id)}
                         >
-                          generate wav files
+                          {work.wavs.length > 0 && "regenerate wav files"}
+                          {work.wavs.length <= 0 && "generate wav files"}
                         </Button>
                       </div>
-                    </li>
+                    </ListItem>
                   ))}
                 </List>
               </div>
@@ -242,6 +243,10 @@ export default function Index() {
     </PageLayout>
   );
 }
+
+const NaroTitle = styled.h3`
+  margin: 10px;
+`;
 
 const InputWorkItem = styled.div`
   margin: auto;
@@ -257,15 +262,20 @@ const InputWorkArea = styled.div`
   }
 `;
 
-const List = styled.ul`
+const WavArea = styled.div`
+  margin: 10px;
+`;
+
+const List = styled.div`
   padding: 5px 10px 20px 10px;
 `;
 
-const ListItem = styled.li`
+const ListItem = styled.div`
   list-style-type: none;
   cursor: pointer;
   border-bottom: 1px solid gray;
   margin-bottom: 10px;
+  padding: 10px;
 `;
 
 const NaroWorkManageArea = styled.div`

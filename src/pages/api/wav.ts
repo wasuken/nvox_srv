@@ -16,6 +16,8 @@ export default async function handler(
       where: {
         voice_downloaded: false,
       },
+      // 長時間拘束するわけにもいかないので刻む
+      take: 5,
     });
     console.log("info", `not downloaded records: ${wavRecords.length}.`);
     for (let i = 0; i < wavRecords.length; i++) {

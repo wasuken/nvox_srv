@@ -10,8 +10,13 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     const { ncode } = req.body;
+    if (ncode.length <= 0) {
+      res.status(400).json({ msg: "ncode empty." });
+      return;
+    }
     await createNaro(ncode);
     res.status(200).json({ msg: "success" });
+    return;
   } else if (req.method === "GET") {
     const rst = await prisma.naro.findMany({
       select: {

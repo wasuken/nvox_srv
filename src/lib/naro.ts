@@ -74,26 +74,25 @@ export async function createNaroWorks(
   }
   const naro_id = naro.id;
   // レコードから最大話数を取得
-  const nums = Array.from(Array(naro.totalPage - 1), (v, k) => k + 1).filter(
-    (v) => v <= end
-  );
-  // 話数範囲に一つもない場合
-  if (nums.length <= 0) {
-    console.log("debug", [[begin, end], naro]);
-    throw new Error(`work <= ${end}`);
-  }
   const already_recs = await prisma.naroWork.findMany({
     where: {
       naro_id,
     },
   });
   const already_nums = already_recs.map((rec) => rec.no);
+  const nums = Array.from(Array(naro.totalPage - 1), (v, k) => k + 1).filter(
+    (v) => v <= end && !already_nums.includes(v)
+  );
+  // 話数範囲に一つもない場合
+  if (nums.length <= 0) {
+    console.log("debug", [[begin, end], naro]);
+    throw new Error(`work <= ${end}`);
+  }
   const naro_work_base_url = `${NARO_BASE_URL}${ncode}/`;
   // なろう小説作品URLからコンテンツを取得
   await Promise.all(
     nums.map(async (no, i) => {
       // すでに存在する場合、処理しない
-      if (already_nums.includes(no)) return;
       const res = await setTimeout(i * 1000, "wait:" + i);
       // URLからコンテンツ(text, html)を取得
       const url = `${naro_work_base_url}${no}/`;

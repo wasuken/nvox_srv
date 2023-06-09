@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "react-query";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
+import Pagination from "@/components/Pagination";
 
 const DEBUG = false;
 
@@ -37,6 +38,7 @@ export default function Index() {
   const [inputNcode, setInputNcode] = useState("");
   const [ncode, setNcode] = useState("");
   const [naro, setNaro] = useState<Naro | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   async function fetchIdList() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/naro`);
     const json = await res.json();
@@ -58,11 +60,22 @@ export default function Index() {
     return json;
   }
   function PostNaroClick() {
+    setLoading(true);
     PostNaro().then((res) => {
       console.log(res);
       queryClient.invalidateQueries("idList");
       setInputNcode("");
-      alert("登録完了しました");
+      setLoading(false);
+    });
+  }
+  function deleteNaroClick() {
+    console.log(`${process.env.NEXT_PUBLIC_BASE_URL}/api/naro/${ncode}`);
+    setLoading(true);
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/naro/${ncode}`, {
+      method: "DELETE",
+    }).then((_res) => {
+      alert("削除完了しました");
+      setLoading(false);
     });
   }
 
@@ -91,9 +104,11 @@ export default function Index() {
     setNaro(fncode);
     setWorkList([]);
     setWorkFetchStatus("loading");
+    setLoading(true);
     fetchWorkList(ncode).then((json) => {
       setWorkList(json);
       setWorkFetchStatus("success");
+      setLoading(false);
     });
   }
   // 話のWav化リクエスト
@@ -112,10 +127,11 @@ export default function Index() {
     return json;
   }
   function fetchNaroWorks(ncode: string, begin: number, end: number) {
+    setLoading(true);
     requestNaroWorks(ncode, begin, end).then((res) => {
       console.log(res);
       getNaroWork(ncode);
-      alert("Fetch成功");
+      setLoading(false);
     });
   }
   async function requestNaroWorkWavs(naro_work_id: number) {
@@ -132,11 +148,28 @@ export default function Index() {
     return json;
   }
   function fetchNaroWorkWavs(naro_work_id: number) {
+    setLoading(true);
     requestNaroWorkWavs(naro_work_id).then((res) => {
       console.log(res);
       getNaroWork(ncode);
+      setLoading(false);
     });
   }
+  function handlePageChange(page: number) {
+    setCurrentPage(page);
+  }
+
+  const total = Math.floor(workList.length / 10);
+  let workListSlice: NaroWork[][] = [];
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  workList.forEach((w, i) => {
+    const index = Math.floor(i / 10);
+    if (!workListSlice[index]) {
+      workListSlice[index] = [];
+    }
+    workListSlice[index].push(w);
+  });
+  if (loading) return <>Loading...</>;
 
   return (
     <PageLayout>
@@ -198,42 +231,56 @@ export default function Index() {
               >
                 Fetch
               </Button>
+              <Button variant="primary" onClick={() => deleteNaroClick()}>
+                Delete
+              </Button>
             </InputWorkArea>
             {naro && (
               <div>
                 <NaroTitle>{naro.title}</NaroTitle>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={total}
+                  onPageChange={handlePageChange}
+                />
                 <List>
-                  {workList.map((work, i) => (
-                    <ListItem>
-                      <div>
-                        {work.no}:{trimTitle(work.title)}
-                      </div>
-                      <WavArea>
-                        {work.wavs.map((wav, j) =>
-                          wav.voice_downloaded ? (
-                            <figure key={j}>
-                              <audio controls src={`${wav.wav_web_path}`}>
-                                <a href={`${wav.wav_web_path}`}>
-                                  Download audio
-                                </a>
-                              </audio>
-                            </figure>
-                          ) : (
-                            <div>waiting download...</div>
-                          )
-                        )}
-                      </WavArea>
-                      <div>
-                        <Button
-                          variant="primary"
-                          onClick={() => fetchNaroWorkWavs(work.id)}
-                        >
-                          {work.wavs.length > 0 && "regenerate wav files"}
-                          {work.wavs.length <= 0 && "generate wav files"}
-                        </Button>
-                      </div>
-                    </ListItem>
-                  ))}
+                  {workListSlice.length > 0 &&
+                    workListSlice[currentPage - 1].map((work, i) => (
+                      <ListItem key={i}>
+                        <div>
+                          {work.no}:{trimTitle(work.title)}
+                        </div>
+                        <WavArea>
+                          {work.wavs.map((wav, j) =>
+                            wav.voice_downloaded ? (
+                              <figure key={j}>
+                                <audio controls src={`${wav.wav_web_path}`}>
+                                  <a href={`${wav.wav_web_path}`}>
+                                    Download audio
+                                  </a>
+                                </audio>
+                              </figure>
+                            ) : (
+                              <div>waiting download...</div>
+                            )
+                          )}
+                        </WavArea>
+                        <div>
+                          <Button
+                            variant="primary"
+                            onClick={() => fetchNaroWorkWavs(work.id)}
+                          >
+                            {work.wavs.length > 0 && "regenerate wav files"}
+                            {work.wavs.length <= 0 && "generate wav files"}
+                          </Button>
+                        </div>
+                      </ListItem>
+                    ))}
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={total}
+                    onPageChange={handlePageChange}
+                  />
                 </List>
               </div>
             )}

@@ -44,6 +44,15 @@ export default async function handler(
     const end = parseInt(sEnd);
     await createNaroWorks(ncode, begin, end);
     res.status(200).json({ msg: "success" });
+    return;
+  } else if (req.method === "DELETE") {
+    await prisma.naro.deleteMany({
+      where: {
+        ncode,
+      },
+    });
+    res.status(200).json({ msg: "success" });
+    return;
   }
   return;
 }
